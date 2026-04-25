@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>德州撲克新人基礎觀念練習</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", "Helvetica Neue", Arial, sans-serif;
+    background: #0f3a2a;
+    color: #1a1a1a;
+    -webkit-text-size-adjust: 100%;
+    line-height: 1.5;
+  }
+  body {
+    min-height: 100vh;
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+  }
+  .app {
+    width: 100%;
+    max-width: 560px;
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    padding: 20px 18px 24px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 22px;
+    margin: 0 0 6px;
+    color: #0f3a2a;
+    letter-spacing: 0.5px;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 22px;
+  }
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 16px 14px;
+    font-size: 17px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 12px;
+    text-align: center;
+    transition: background 0.15s, transform 0.05s;
+    font-family: inherit;
+  }
+  .btn-primary {
+    background: #0f5132;
+    color: #fff;
+  }
+  .btn-primary:active { transform: scale(0.98); background: #0a3d24; }
+  .btn-secondary {
+    background: #e9ecef;
+    color: #1a1a1a;
+  }
+  .btn-secondary:active { transform: scale(0.98); background: #d6dade; }
+  .btn-disabled {
+    background: #cfd2d6 !important;
+    color: #6c757d !important;
+    cursor: not-allowed;
+  }
+
+  .progress-wrap {
+    margin-bottom: 14px;
+  }
+  .progress-text {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 6px;
+  }
+  .progress-bar {
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #0f5132;
+    width: 0%;
+    transition: width 0.25s ease;
+  }
+
+  .category-tag {
+    display: inline-block;
+    background: #e7f1ec;
+    color: #0f5132;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+  }
+  .question-text {
+    font-size: 17px;
+    line-height: 1.6;
+    color: #1a1a1a;
+    margin: 0 0 18px;
+    font-weight: 500;
+  }
+
+  .options { margin-top: 10px; }
+  .option {
+    width: 100%;
+    text-align: left;
+    padding: 14px 14px;
+    margin-bottom: 10px;
+    border: 2px solid #ced4da;
+    border-radius: 10px;
+    background: #fff;
+    font-size: 16px;
+    line-height: 1.5;
+    cursor: pointer;
+    color: #1a1a1a;
+    font-family: inherit;
+    transition: border-color 0.15s, background 0.15s;
+    word-wrap: break-word;
+  }
+  .option:active { background: #f1f3f5; }
+
+  .option.selected-correct {
+    border-color: #198754;
+    background: #d1e7dd;
+    color: #0a3622;
+  }
+  .option.selected-wrong {
+    border-color: #dc3545;
+    background: #f8d7da;
+    color: #58151c;
+  }
+  .option.show-correct {
+    border-color: #198754;
+    background: #d1e7dd;
+    color: #0a3622;
+  }
+  .option.locked { cursor: default; }
+
+  .option .mark {
+    float: right;
+    font-weight: 700;
+    margin-left: 8px;
+  }
+  .option.selected-correct .mark::before { content: "✓ 你選"; color: #0f5132; }
+  .option.selected-wrong .mark::before { content: "✗ 你選"; color: #842029; }
+  .option.show-correct:not(.selected-correct) .mark::before { content: "✓ 正解"; color: #0f5132; }
+
+  .feedback {
+    margin-top: 16px;
+    padding: 14px;
+    border-radius: 10px;
+    border-left: 5px solid #198754;
+    background: #f1faf5;
+  }
+  .feedback.wrong {
+    border-left-color: #dc3545;
+    background: #fdf3f4;
+  }
+  .feedback-title {
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+  .feedback.correct .feedback-title { color: #0f5132; }
+  .feedback.wrong .feedback-title { color: #842029; }
+  .feedback-row {
+    font-size: 14.5px;
+    color: #1a1a1a;
+    margin-top: 6px;
+  }
+  .feedback-row b { color: #0f3a2a; }
+
+  .result-summary {
+    text-align: center;
+    padding: 8px 0 10px;
+  }
+  .score-big {
+    font-size: 56px;
+    font-weight: 800;
+    color: #0f5132;
+    line-height: 1.1;
+    margin: 8px 0;
+  }
+  .score-unit { font-size: 24px; color: #555; font-weight: 600; }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin: 18px 0 8px;
+  }
+  .stat {
+    background: #f5f7f6;
+    border-radius: 10px;
+    padding: 12px 6px;
+    text-align: center;
+  }
+  .stat .num {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f3a2a;
+  }
+  .stat .label {
+    font-size: 12.5px;
+    color: #555;
+    margin-top: 4px;
+  }
+  .stat.correct .num { color: #0f5132; }
+  .stat.wrong .num { color: #b02a37; }
+  .encourage {
+    margin: 16px 0 4px;
+    padding: 14px;
+    background: #f1faf5;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 15px;
+    color: #0f3a2a;
+    font-weight: 500;
+    line-height: 1.6;
+  }
+
+  .review-item {
+    border: 1px solid #e0e3e6;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+    background: #fff;
+  }
+  .review-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .review-num {
+    font-weight: 700;
+    color: #0f3a2a;
+    font-size: 14px;
+  }
+  .review-q {
+    font-size: 15.5px;
+    margin: 6px 0 10px;
+    color: #1a1a1a;
+    font-weight: 500;
+  }
+  .review-row {
+    font-size: 14px;
+    margin: 4px 0;
+  }
+  .review-row .lbl {
+    display: inline-block;
+    min-width: 78px;
+    color: #555;
+  }
+  .review-row .your-wrong { color: #b02a37; font-weight: 600; }
+  .review-row .right { color: #0f5132; font-weight: 600; }
+  .review-explain {
+    margin-top: 8px;
+    padding: 10px;
+    background: #f5f7f6;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #333;
+    line-height: 1.55;
+  }
+  .empty-msg {
+    text-align: center;
+    padding: 30px 12px;
+    color: #0f3a2a;
+    font-size: 16px;
+    font-weight: 500;
+    background: #f1faf5;
+    border-radius: 10px;
+  }
+  .footer-note {
+    margin-top: 18px;
+    text-align: center;
+    font-size: 12px;
+    color: #888;
+  }
+
+  @media (max-width: 380px) {
+    .app { padding: 16px 14px; }
+    h1 { font-size: 20px; }
+    .question-text { font-size: 16px; }
+    .option { font-size: 15px; padding: 13px 12px; }
+    .score-big { font-size: 48px; }
+  }
+</style>
+</head>
+<body>
+  <div class="app" id="app"></div>
+
+<script>
+  // ============================
+  // 題庫
+  // ============================
+  const QUESTIONS = [
+    {
+      id: 'Q001', category: '位置觀念', type: 'tf',
+      question: 'SB（Small Blind，小盲）是德州撲克中的小盲位置。',
+      options: ['是', '否'],
+      answer: 0,
+      explanation: 'SB 是 Small Blind，也就是小盲，通常需要投入小盲注。'
+    },
+    {
+      id: 'Q002', category: '位置觀念', type: 'tf',
+      question: 'BB（Big Blind，大盲）是德州撲克中的大盲位置。',
+      options: ['是', '否'],
+      answer: 0,
+      explanation: 'BB 是 Big Blind，也就是大盲，通常需要投入大盲注。'
+    },
+    {
+      id: 'Q003', category: '位置觀念', type: 'mc',
+      question: 'Button 在德州撲克中通常代表什麼？',
+      options: [
+        'A. 莊家位置',
+        'B. 大盲位置',
+        'C. 棄牌區',
+        'D. 底池位置'
+      ],
+      answer: 0,
+      explanation: 'Button 代表莊家位置，會影響發牌順序與行動順序。'
+    },
+    {
+      id: 'Q004', category: '基礎牌局', type: 'tf',
+      question: '德州撲克中，每位玩家一開始會拿到兩張自己的底牌。',
+      options: ['是', '否'],
+      answer: 0,
+      explanation: '底牌是只有該玩家自己可以看的手牌。'
+    },
+    {
+      id: 'Q005', category: '基礎牌局', type: 'tf',
+      question: '公共牌是所有仍在牌局中的玩家都可以使用的牌。',
+      options: ['是', '否'],
+      answer: 0,
+      explanation: '公共牌會發在桌面中央，玩家可用自己的底牌搭配公共牌組成牌型。'
+    },
+    {
+      id: 'Q006', category: '遊戲回合', type: 'mc',
+      question: '德州撲克一手牌通常有哪四個下注回合？',
+      options: [
+        'A. 翻前、翻牌、轉牌、河牌',
+        'B. 開局、中局、後局、結算',
+        'C. 小盲、大盲、前注、底池',
+        'D. 洗牌、切牌、發牌、收牌'
+      ],
+      answer: 0,
+      explanation: '德州撲克常見的四個下注回合是翻前、翻牌、轉牌、河牌。'
+    },
+    {
+      id: 'Q007', category: '遊戲回合', type: 'tf',
+      question: 'Flop（翻牌）會一次發出三張公共牌。',
+      options: ['是', '否'],
+      answer: 0,
+      explanation: '翻牌階段會發出三張公共牌。'
+    },
+    {
+      id: 'Q008', category: '遊戲回合', type: 'tf',
+      question: 'Turn（轉牌）是在 Flop（翻牌）之後發出的一張公共牌。',
+      options: ['是', '否'],
+      answer: 0,
+      explanation: '轉牌是第四張公共牌。'
+    },
+    {
+      id: 'Q009', category: '遊戲回合', type: 'tf',
+      question: 'River（河牌）是最後一張公共牌。',
+      options: ['是', '否'],
+      answer: 0,
+      explanation: '河牌是第五張公共牌，也是最後一張公共牌。'
+    },
+    {
+      id: 'Q010', category: '行動觀念', type: 'mc',
+      question: '在一般多人桌情境下，翻牌前第一位行動玩家通常是誰？',
+      options: [
+        'A. BB 後的下一位有手牌玩家，通常稱為 UTG',
+        'B. Button',
+        'C. SB',
+        'D. 最後入座的玩家'
+      ],
+      answer: 0,
+      explanation: '一般多人桌翻前通常由 BB 後的下一位有手牌玩家先行動。'
+    },
+    {
+      id: 'Q011', category: '行動觀念', type: 'mc',
+      question: '在一般多人桌情境下，翻牌後第一位行動玩家通常如何判斷？',
+      options: [
+        'A. Button 後第一位仍有手牌的玩家',
+        'B. 翻前最後加注的玩家',
+        'C. 籌碼最多的玩家',
+        'D. 最先說話的玩家'
+      ],
+      answer: 0,
+      explanation: '翻後通常從 Button 後第一位仍有手牌的玩家開始行動。'
+    },
+    {
+      id: 'Q012', category: '動作術語', type: 'mc',
+      question: 'Check（過牌）代表什麼？',
+      options: [
+        'A. 在不用投入更多籌碼的情況下，把行動權交給下一位玩家',
+        'B. 直接棄牌',
+        'C. 一定要加注',
+        'D. 把底池拿走'
+      ],
+      answer: 0,
+      explanation: '過牌通常發生在目前沒有需要跟注的下注時。'
+    },
+    {
+      id: 'Q013', category: '動作術語', type: 'mc',
+      question: 'Call（跟注）代表什麼？',
+      options: [
+        'A. 跟上目前需要投入的下注額',
+        'B. 放棄手牌',
+        'C. 發出公共牌',
+        'D. 宣布牌局結束'
+      ],
+      answer: 0,
+      explanation: '跟注就是投入足夠籌碼，跟上目前的下注額。'
+    },
+    {
+      id: 'Q014', category: '動作術語', type: 'mc',
+      question: 'Raise（加注）代表什麼？',
+      options: [
+        'A. 在跟上目前下注額之外，再提高下注額',
+        'B. 不投入籌碼直接過牌',
+        'C. 把手牌丟掉',
+        'D. 要求重發牌'
+      ],
+      answer: 0,
+      explanation: '加注代表把目前需要跟注的金額再提高。'
+    },
+    {
+      id: 'Q015', category: '動作術語', type: 'mc',
+      question: 'Fold（棄牌）代表什麼？',
+      options: [
+        'A. 放棄本手牌，退出該手牌競爭',
+        'B. 增加下注',
+        'C. 拿走底池',
+        'D. 發出下一張公共牌'
+      ],
+      answer: 0,
+      explanation: '棄牌後，玩家通常不再參與該手牌的後續競爭。'
+    },
+    {
+      id: 'Q016', category: '籌碼觀念', type: 'tf',
+      question: 'All-in（全下）是指玩家把自己可用於該手牌的籌碼全部投入。',
+      options: ['是', '否'],
+      answer: 0,
+      explanation: 'All-in 表示玩家已把可用籌碼全部投入該手牌。'
+    },
+    {
+      id: 'Q017', category: '底池觀念', type: 'tf',
+      question: 'Pot（底池）是本手牌中玩家已投入並用來爭奪的籌碼集合。',
+      options: ['是', '否'],
+      answer: 0,
+      explanation: '底池就是本手牌中累積起來、最後由勝者或符合條件的玩家取得的籌碼。'
+    },
+    {
+      id: 'Q018', category: '開牌觀念', type: 'mc',
+      question: 'Showdown（攤牌 / 開牌）通常代表什麼？',
+      options: [
+        'A. 剩餘玩家亮出手牌，比較牌型決定勝負',
+        'B. 開始洗牌',
+        'C. 玩家入座',
+        'D. 裁判宣布休息'
+      ],
+      answer: 0,
+      explanation: '當最後下注回合結束且仍有多名玩家未棄牌時，通常會進入攤牌。'
+    },
+    {
+      id: 'Q019', category: '桌面安全', type: 'tf',
+      question: '如果荷官發現牌組有缺張、混色或破損等異常，應通知裁判或場控處理。',
+      options: ['是', '否'],
+      answer: 0,
+      explanation: '牌組異常可能影響公平性，應交由裁判或場控判斷處理方式。'
+    },
+    {
+      id: 'Q020', category: '桌面安全', type: 'tf',
+      question: '新人遇到自己不確定的牌桌狀況時，應該自己猜測處理，避免打擾裁判。',
+      options: ['是', '否'],
+      answer: 1,
+      explanation: '不確定時應通知裁判或場控，避免自行處理造成更大爭議。'
+    }
+  ];
+
+  // ============================
+  // 狀態
+  // ============================
+  const state = {
+    page: 'start',           // start | quiz | result | review | redo | redoResult
+    // 第一次完整測驗
+    answers: new Array(QUESTIONS.length).fill(null), // selectedIndex 或 null
+    currentIndex: 0,
+    // 重做錯題
+    redoList: [],            // 原始題目 index 陣列
+    redoAnswers: [],
+    redoIndex: 0,
+    // 第一次完整測驗的最終分數紀錄（不被重做改動）
+    finalRecord: null        // { correct, wrong, total, score }
+  };
+
+  const app = document.getElementById('app');
+
+  // ============================
+  // Render router
+  // ============================
+  function render() {
+    window.scrollTo(0, 0);
+    switch (state.page) {
+      case 'start': return renderStart();
+      case 'quiz': return renderQuiz();
+      case 'result': return renderResult();
+      case 'review': return renderReview();
+      case 'redo': return renderRedo();
+      case 'redoResult': return renderRedoResult();
+    }
+  }
+
+  // ============================
+  // Start
+  // ============================
+  function renderStart() {
+    app.innerHTML = `
+      <h1>德州撲克新人基礎觀念練習</h1>
+      <div class="subtitle">20 題｜適合新手荷官 / 計分員 / 場館新人</div>
+      <button class="btn btn-primary" id="startBtn">開始練習</button>
+      <div class="footer-note">v0.1 測試版</div>
+    `;
+    document.getElementById('startBtn').addEventListener('click', () => {
+      state.answers = new Array(QUESTIONS.length).fill(null);
+      state.currentIndex = 0;
+      state.finalRecord = null;
+      state.page = 'quiz';
+      render();
+    });
+  }
+
+  // ============================
+  // Quiz (完整 20 題)
+  // ============================
+  function renderQuiz() {
+    const idx = state.currentIndex;
+    const q = QUESTIONS[idx];
+    const total = QUESTIONS.length;
+    const selected = state.answers[idx];
+    const locked = selected !== null;
+    const pct = Math.round(((idx + (locked ? 1 : 0)) / total) * 100);
+
+    app.innerHTML = `
+      <div class="progress-wrap">
+        <div class="progress-text">
+          <span>第 ${idx + 1} / ${total} 題</span>
+          <span>${pct}%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      </div>
+      <span class="category-tag">${q.category}</span>
+      <p class="question-text">${escapeHtml(q.question)}</p>
+      <div class="options" id="opts"></div>
+      <div id="feedbackArea"></div>
+    `;
+
+    const opts = document.getElementById('opts');
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option';
+      btn.innerHTML = `<span class="text">${escapeHtml(opt)}</span><span class="mark"></span>`;
+      if (locked) {
+        btn.classList.add('locked');
+        applyLockedStyle(btn, i, selected, q.answer);
+      } else {
+        btn.addEventListener('click', () => onAnswer(i));
+      }
+      opts.appendChild(btn);
+    });
+
+    if (locked) {
+      renderFeedback('feedbackArea', q, selected, () => {
+        if (idx + 1 >= total) {
+          finalizeQuiz();
+          state.page = 'result';
+        } else {
+          state.currentIndex += 1;
+        }
+        render();
+      }, idx + 1 >= total ? '看結果' : '下一題');
+    }
+  }
+
+  function onAnswer(i) {
+    state.answers[state.currentIndex] = i;
+    render();
+  }
+
+  function finalizeQuiz() {
+    let correct = 0;
+    state.answers.forEach((a, i) => {
+      if (a === QUESTIONS[i].answer) correct++;
+    });
+    const total = QUESTIONS.length;
+    const wrong = total - correct;
+    const score = Math.round((correct / total) * 100);
+    state.finalRecord = { correct, wrong, total, score };
+  }
+
+  // ============================
+  // Result (第一次完整測驗)
+  // ============================
+  function renderResult() {
+    const r = state.finalRecord;
+    const accuracy = Math.round((r.correct / r.total) * 100);
+    const encourage = getEncourage(r.score);
+    const wrongCount = r.wrong;
+
+    app.innerHTML = `
+      <h1>練習結果</h1>
+      <div class="result-summary">
+        <div class="score-big">${r.score}<span class="score-unit"> 分</span></div>
+        <div style="color:#555;font-size:14px;">總題數 ${r.total} 題</div>
+      </div>
+      <div class="stats">
+        <div class="stat correct">
+          <div class="num">${r.correct}</div>
+          <div class="label">答對</div>
+        </div>
+        <div class="stat wrong">
+          <div class="num">${r.wrong}</div>
+          <div class="label">答錯</div>
+        </div>
+        <div class="stat">
+          <div class="num">${accuracy}%</div>
+          <div class="label">正確率</div>
+        </div>
+      </div>
+      <div class="encourage">${encourage}</div>
+      <button class="btn btn-primary" id="reviewBtn">查看錯題</button>
+      <button class="btn ${wrongCount > 0 ? 'btn-secondary' : 'btn-disabled'}" id="redoBtn" ${wrongCount > 0 ? '' : 'disabled'}>重做錯題</button>
+      <button class="btn btn-secondary" id="restartBtn">重新開始全部題目</button>
+    `;
+
+    document.getElementById('reviewBtn').addEventListener('click', () => {
+      state.page = 'review';
+      render();
+    });
+    if (wrongCount > 0) {
+      document.getElementById('redoBtn').addEventListener('click', () => {
+        startRedo();
+      });
+    }
+    document.getElementById('restartBtn').addEventListener('click', () => {
+      state.page = 'start';
+      render();
+    });
+  }
+
+  function getEncourage(score) {
+    if (score >= 90) return '基礎觀念很穩，可以進下一階段。';
+    if (score >= 70) return '基礎不錯，但錯題要複習。';
+    return '建議重做一次，先把基本術語和流程穩住。';
+  }
+
+  // ============================
+  // Review (錯題列表)
+  // ============================
+  function renderReview() {
+    const wrongIdxs = state.answers
+      .map((a, i) => (a !== QUESTIONS[i].answer ? i : -1))
+      .filter(i => i !== -1);
+
+    let body;
+    if (wrongIdxs.length === 0) {
+      body = `<div class="empty-msg">本次沒有錯題，基礎觀念很穩。</div>`;
+    } else {
+      body = wrongIdxs.map(i => {
+        const q = QUESTIONS[i];
+        const userAns = q.options[state.answers[i]];
+        const correctAns = q.options[q.answer];
+        return `
+          <div class="review-item">
+            <div class="review-head">
+              <span class="review-num">第 ${i + 1} 題（${q.id}）</span>
+              <span class="category-tag" style="margin:0;">${q.category}</span>
+            </div>
+            <div class="review-q">${escapeHtml(q.question)}</div>
+            <div class="review-row"><span class="lbl">你的答案：</span><span class="your-wrong">${escapeHtml(userAns)}</span></div>
+            <div class="review-row"><span class="lbl">正確答案：</span><span class="right">${escapeHtml(correctAns)}</span></div>
+            <div class="review-explain">${escapeHtml(q.explanation)}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    app.innerHTML = `
+      <h1>錯題列表</h1>
+      <div class="subtitle">本次答錯 ${wrongIdxs.length} 題</div>
+      ${body}
+      <button class="btn btn-primary" id="backBtn">回結果頁</button>
+    `;
+    document.getElementById('backBtn').addEventListener('click', () => {
+      state.page = 'result';
+      render();
+    });
+  }
+
+  // ============================
+  // Redo (重做錯題)
+  // ============================
+  function startRedo() {
+    const wrongIdxs = state.answers
+      .map((a, i) => (a !== QUESTIONS[i].answer ? i : -1))
+      .filter(i => i !== -1);
+    if (wrongIdxs.length === 0) return;
+    state.redoList = wrongIdxs;
+    state.redoAnswers = new Array(wrongIdxs.length).fill(null);
+    state.redoIndex = 0;
+    state.page = 'redo';
+    render();
+  }
+
+  function renderRedo() {
+    const total = state.redoList.length;
+    const idx = state.redoIndex;
+    const qIndex = state.redoList[idx];
+    const q = QUESTIONS[qIndex];
+    const selected = state.redoAnswers[idx];
+    const locked = selected !== null;
+    const pct = Math.round(((idx + (locked ? 1 : 0)) / total) * 100);
+
+    app.innerHTML = `
+      <div class="progress-wrap">
+        <div class="progress-text">
+          <span>重做錯題　第 ${idx + 1} / ${total} 題</span>
+          <span>${pct}%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      </div>
+      <span class="category-tag">${q.category}</span>
+      <p class="question-text">${escapeHtml(q.question)}</p>
+      <div class="options" id="opts"></div>
+      <div id="feedbackArea"></div>
+    `;
+
+    const opts = document.getElementById('opts');
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option';
+      btn.innerHTML = `<span class="text">${escapeHtml(opt)}</span><span class="mark"></span>`;
+      if (locked) {
+        btn.classList.add('locked');
+        applyLockedStyle(btn, i, selected, q.answer);
+      } else {
+        btn.addEventListener('click', () => {
+          state.redoAnswers[idx] = i;
+          render();
+        });
+      }
+      opts.appendChild(btn);
+    });
+
+    if (locked) {
+      renderFeedback('feedbackArea', q, selected, () => {
+        if (idx + 1 >= total) {
+          state.page = 'redoResult';
+        } else {
+          state.redoIndex += 1;
+        }
+        render();
+      }, idx + 1 >= total ? '看重做結果' : '下一題');
+    }
+  }
+
+  function renderRedoResult() {
+    const total = state.redoList.length;
+    let correct = 0;
+    state.redoAnswers.forEach((a, i) => {
+      const qIndex = state.redoList[i];
+      if (a === QUESTIONS[qIndex].answer) correct++;
+    });
+    const wrong = total - correct;
+    const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+    app.innerHTML = `
+      <h1>錯題重做結果</h1>
+      <div class="subtitle">本次只計算重做的錯題，不影響原本總分。</div>
+      <div class="result-summary">
+        <div class="score-big">${accuracy}<span class="score-unit">%</span></div>
+        <div style="color:#555;font-size:14px;">重做 ${total} 題　正確率</div>
+      </div>
+      <div class="stats">
+        <div class="stat">
+          <div class="num">${total}</div>
+          <div class="label">重做題數</div>
+        </div>
+        <div class="stat correct">
+          <div class="num">${correct}</div>
+          <div class="label">答對</div>
+        </div>
+        <div class="stat wrong">
+          <div class="num">${wrong}</div>
+          <div class="label">答錯</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="backBtn">回原本結果頁</button>
+      <button class="btn btn-secondary" id="restartBtn">重新開始全部題目</button>
+    `;
+    document.getElementById('backBtn').addEventListener('click', () => {
+      state.page = 'result';
+      render();
+    });
+    document.getElementById('restartBtn').addEventListener('click', () => {
+      state.page = 'start';
+      render();
+    });
+  }
+
+  // ============================
+  // Helpers
+  // ============================
+  function applyLockedStyle(btn, i, selected, correct) {
+    if (i === selected && i === correct) {
+      btn.classList.add('selected-correct');
+    } else if (i === selected && i !== correct) {
+      btn.classList.add('selected-wrong');
+    } else if (i === correct) {
+      btn.classList.add('show-correct');
+    }
+  }
+
+  function renderFeedback(containerId, q, selected, onNext, btnLabel) {
+    const isCorrect = selected === q.answer;
+    const correctText = q.options[q.answer];
+    const fb = document.getElementById(containerId);
+    fb.innerHTML = `
+      <div class="feedback ${isCorrect ? 'correct' : 'wrong'}">
+        <div class="feedback-title">${isCorrect ? '答對' : '不正確'}</div>
+        <div class="feedback-row"><b>正確答案：</b>${escapeHtml(correctText)}</div>
+        <div class="feedback-row"><b>白話解釋：</b>${escapeHtml(q.explanation)}</div>
+      </div>
+      <button class="btn btn-primary" id="nextBtn">${btnLabel}</button>
+    `;
+    document.getElementById('nextBtn').addEventListener('click', onNext);
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // 啟動
+  render();
+</script>
+</body>
+</html>
